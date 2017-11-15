@@ -12,7 +12,7 @@
 #include <assert.h>
 
 int size;
-#define BLOCK_SIZE 32 
+#define BLOCK_SIZE 32
 
 typedef struct
 {
@@ -123,7 +123,7 @@ void mm(matrix a, matrix b, matrix result)
 				result.element[i][j] += a.element[i][k] * b.element[k][j];
 }
 
-__device__ void print_sm(float a[BLOCK_SIZE][BLOCK_SIZE]) 
+__device__ void print_sm(float a[BLOCK_SIZE][BLOCK_SIZE+1]) 
 {
 	int i,j;
 	int block = 1;
@@ -131,7 +131,7 @@ __device__ void print_sm(float a[BLOCK_SIZE][BLOCK_SIZE])
 		printf("printing sm...\n");
 		for (i = 0; i < BLOCK_SIZE; i++) {
 			printf("row %d :", i);
-			for(j = 0; j < BLOCK_SIZE; j++) 
+			for(j = 0; j < BLOCK_SIZE+1; j++) 
 				printf("%1.2f ", a[i][j]);
 			printf("\n");
 		}
@@ -154,12 +154,20 @@ __global__ void mm_kernel(matrix a, matrix b, matrix result, int size)
 	
 	for(k = 0; k < size/BLOCK_SIZE; k++) {
 	
-		__shared__ float As[BLOCK_SIZE][BLOCK_SIZE];
-		__shared__ float Bs[BLOCK_SIZE][BLOCK_SIZE];
+		__shared__ float As[BLOCK_SIZE][BLOCK_SIZE+1];
+		__shared__ float Bs[BLOCK_SIZE][BLOCK_SIZE+1];
 
-		As[threadIdx.y][threadIdx.x] = a.element[blockIdx.y * blockDim.y + threadIdx.y][k * BLOCK_SIZE + threadIdx.x];
-		Bs[threadIdx.y][threadIdx.x] = b.element[k * BLOCK_SIZE + threadIdx.y][blockIdx.x * blockDim.x + threadIdx.x];	
+		if (threadIdx.x == BLOCK_SIZE) {
+			As[threadIdx.y][threadIdx.x] = 0.0;
+			Bs[threadIdx.y][threadIdx.x] = 0.0;
+		} 
 		
+		else 
+		{
+			As[threadIdx.y][threadIdx.x] = a.element[blockIdx.y * blockDim.y + threadIdx.y][k * BLOCK_SIZE + threadIdx.x];
+			Bs[threadIdx.y][threadIdx.x] = b.element[k * BLOCK_SIZE + threadIdx.y][blockIdx.x * blockDim.x + threadIdx.x];	
+		}
+	
 		__syncthreads();
 	
 		for (e = 0; e < BLOCK_SIZE; e++) {
@@ -242,7 +250,7 @@ void work()
 		//print_matrix(result1);
 		//print_matrix(result2);
 	}
-
+	
 	free_matrix(&a);
 	free_matrix(&b);
 	free_matrix(&result1);
