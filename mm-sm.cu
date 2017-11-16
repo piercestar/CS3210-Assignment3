@@ -161,7 +161,7 @@ __global__ void mm_kernel(matrix a, matrix b, matrix result, int size)
 		Bs[threadIdx.y][threadIdx.x] = b.element[k * BLOCK_SIZE + threadIdx.y][blockIdx.x * blockDim.x + threadIdx.x];	
 		
 		__syncthreads();
-	
+				
 		for (e = 0; e < BLOCK_SIZE; e++) {
 			Cvalue += As[threadIdx.y][e] * Bs[e][threadIdx.x];
 		}
@@ -239,8 +239,6 @@ void work()
 	
 	} else {
 		printf("Difference in result matrices at element (%d, %d)!\n", i, j);
-		//print_matrix(result1);
-		//print_matrix(result2);
 	}
 
 	free_matrix(&a);

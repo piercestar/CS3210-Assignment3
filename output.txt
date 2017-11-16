@@ -1,0 +1,9 @@
+==10344== NVPROF is profiling process 10344, command: ./mm-sm 512
+==10344== Profiling application: ./mm-sm 512
+==10344== Profiling result:
+==10344== Event result:
+Invocations                                Event Name         Min         Max         Avg
+Device "GK20A (0)"
+	Kernel: mm_kernel(matrix, matrix, matrix, int)
+          1                        shared_load_replay     1048576     1048576     1048576
+          1                       shared_store_replay           0           0           0
